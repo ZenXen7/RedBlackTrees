@@ -13,7 +13,7 @@ class RedBlack {
 public:
     RedBlack() {
         TNULL = new node;
-        TNULL->isRed = false; 
+        TNULL->isRed = false;
         TNULL->right = NULL;
         TNULL->left = NULL;
         root = TNULL;
@@ -26,7 +26,7 @@ public:
         curr->elem = num;
         curr->left = TNULL;
         curr->right = TNULL;
-        curr->isRed = true; 
+        curr->isRed = true;
 
         node* y = NULL;
         node* x = this->root;
@@ -52,119 +52,126 @@ public:
         else {
             y->right = curr;
         }
-		
-		if(curr->parent == NULL){
-			curr->isRed = false;
-		}
-	
-	
+
+        if(curr->parent == NULL){
+            curr->isRed = false;
+        }
+
         size++;
         insertFix(curr);
-        
-       	
     }
-	
-	void insertFix(node* z) {
-    node* u = new node;
-    while(z->parent->isRed == true){
-    	if(z->parent == z->parent->parent->right){
-    		u = z->parent->parent->left;
-    		if(u->isRed == true){
-    			u->isRed = false;
-    			z->parent->isRed = false;
-    			z->parent->parent->isRed = true;
-    			z = z->parent->parent;
-			} else {
-				if(z == z->parent->left){
-					z = z->parent;
-					rightRotate(z);
-				}
-				z->parent->isRed = false;
-				z->parent->parent->isRed = true;
-				leftRotate(z->parent->parent);
-			}
-		}else {
-			u  = z->parent->parent->right;
-			if(u->isRed == true){
-				u->isRed = false;
-				z->parent->isRed = false;
-				z->parent->parent->isRed = true;
-				z = z->parent->parent;
-			} else {
-				if(z == z->parent->right){
-					z = z->parent;
-					leftRotate(z);
-				}
-				z->parent->isRed = false;
-				z->parent->parent->isRed = true;
-				rightRotate(z->parent->parent);
-			}
-		}
-		if(z == root){
-			break;
-		}
-	}
-	root->isRed = false;
-}
 
+    void insertFix(node*& curr) {
+        node* parent = NULL;
+        node* grandparent = NULL;
+
+        while ((curr != root) && (curr->isRed) && (curr->parent->isRed)) {
+            parent = curr->parent;
+            grandparent = curr->parent->parent;
+
+            if (parent == grandparent->left) {
+                node* uncle = grandparent->right;
+
+                if (uncle != NULL && uncle->isRed) {
+                    parent->isRed = false;
+                    uncle->isRed = false;
+                    grandparent->isRed = true;
+                    curr = grandparent;
+                }
+                else {
+                    if (curr == parent->right) {
+                        leftRotate(parent);
+                        curr = parent;
+                        parent = curr->parent;
+                    }
+                    rightRotate(grandparent);
+                    swap(parent->isRed, grandparent->isRed);
+                    curr = parent;
+                }
+            }
+            else {
+                node* uncle = grandparent->left;
+
+                if ((uncle != NULL) && (uncle->isRed)) {
+                    parent->isRed = false;
+                    uncle->isRed = false;
+                    grandparent->isRed = true;
+                    curr = grandparent;
+                }
+                else {
+                    if (curr == parent->left) {
+                        rightRotate(parent);
+                        curr = parent;
+                        parent = curr->parent;
+                    }
+                    leftRotate(grandparent);
+                    swap(parent->isRed, grandparent->isRed);
+                    curr = parent;
+                }
+            }
+        }
+        root->isRed = false;
+    }
 
     void leftRotate(node*& x) {
         node* y = x->right;
         x->right = y->left;
-        if(y->left != TNULL){
-        	y->left->parent = x;
-		}
-		y->parent = x->parent;
-		if(x->parent = NULL){
-			this->root = y;
-		}
-		else if(x == x->parent->left){
-			x->parent->left = y;
-		}
-		else {
-			x->parent->right = y;
-		}
-		y->left = x;
-		x->parent = y;
+        if(y->left != NULL){
+            y->left->parent = x;
+        }
+        y->parent = x->parent;
+        if(x->parent == NULL){
+            this->root = y;
+        }
+        else if(x == x->parent->left){
+            x->parent->left = y;
+        }
+        else {
+            x->parent->right = y;
+        }
+        y->left = x;
+        x->parent = y;
     }
 
     void rightRotate(node*& x) {
-       node* y = x->left;
-       x->left = y->right;
-       if(y->right != TNULL){
-       	y->right->parent = x;
-	   }
-	   y->parent = x->parent;
-	   if(x->parent == NULL){
-	   	this->root = y;
-	   }
-	   else if(x == x->parent->right){
-	   	x->parent->right = y;
-	   }else {
-	   	x->parent->left = y;
-	   }
-	   y->right = x;
-	   x->parent = y;
+        node* y = x->left;
+        x->left = y->right;
+        if(y->right != NULL){
+            y->right->parent = x;
+        }
+        y->parent = x->parent;
+        if(x->parent == NULL){
+            this->root = y;
+        }
+        else if(x == x->parent->right){
+            x->parent->right = y;
+        }else {
+            x->parent->left = y;
+        }
+        y->right = x;
+        x->parent = y;
     }
 
-  
     void print() {
         cout << "Size: " << size << endl;
-        print("", 'Q', root);
+        if (size > 0) {
+            cout << "Op: p" << endl;
+            printHelper(root, "", 'Q');
+        }
     }
 
-    void print(string pre, char loc, node* n) {
-        if (n != TNULL) {
-            cout << pre << loc << ": " << n->elem;
-            if (n->isRed) {
+    void printHelper(node* curr, string pre, char loc) {
+        if (curr != TNULL) {
+            cout << "Op: " << pre << loc << ": " << curr->elem;
+            if (curr->isRed) {
                 cout << "(R)" << endl;
             }
             else {
                 cout << "(B)" << endl;
             }
 
-            print(pre + "	", 'L', n->left);
-            print(pre + "	", 'R', n->right);
+            printHelper(curr->left, pre + "    ", 'L');
+            printHelper(curr->right, pre + "    ", 'R');
         }
     }
 };
